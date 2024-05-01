@@ -53,8 +53,8 @@ def benfordLaw(url):
     deviations = [((observed[i] - benfords[i]) / x) * 100 for i in range(9)]
 
     print("Benford's Law Deviation:")
-    for digit, deviation in zip(range(1, 10), deviations):
-        print(f"Digit {digit}: Deviation {deviation:.2f}%")
+    # for digit, deviation in zip(range(1, 10), deviations):
+        # print(f"Digit {digit}: Deviation {deviation:.2f}%")
 
     # Separate the positive and negative deviations
     lstneg, lstpos = defaultdict(int), defaultdict(int)
@@ -87,8 +87,8 @@ def benfordLaw(url):
         
     # plt.show()
     maxdev=sorted(maxdev.items())
-    for key,value in maxdev:
-        print(f"deviation {key} : {value}")
+    # for key,value in maxdev:
+        # print(f"deviation {key} : {value}")
 
     column_to_check = 'Amt in local cur.'  
     color = 'FFFF00'  
@@ -116,8 +116,8 @@ def benfordLaw(url):
     buffer = io.BytesIO()
     wb.save(buffer)
     buffer.seek(0)
-    print(buffer)
-    print("HII")
+    # print(buffer)
+    # print("HII")
 
     # wb.save(modified_file_path)
     return buffer
