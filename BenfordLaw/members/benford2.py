@@ -14,6 +14,11 @@ def benfordLaw(url):
     exel_data = response.content
 
     df = pd.read_excel(io.BytesIO(exel_data))
+    print(df.columns)  # Print the column names
+    if('Amt in local cur.' in df.columns):
+        print("YESSSSSS")
+    else:
+        print("NOOOOOOO")
     df1 = df['Amt in local cur.']
     x = (len(df1))
     def get_first_digit(number):

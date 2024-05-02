@@ -8,6 +8,9 @@ from datetime import datetime
 import boto3
 from botocore.exceptions import ClientError  
 import json
+import threading
+import time
+from django.core.mail import send_mail
 #<------------------Generating a Unique Filename---------------------------->
 def generate_unique_filename():
   timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -86,10 +89,54 @@ aws_secret_access_key=aws_secret_access_key,
 endpoint_url=endpoint_url
 )
 
+bucket_name = 'exelfile'
+sqs = boto3.client('sqs',region_name='us-east-1',aws_access_key_id='access_key', aws_secret_access_key='secret_key', endpoint_url=endpoint_urlsqs)
+
+
+def worker():
+   while(True):
+      try:
+          response = sqs.receive_message(
+          QueueUrl=make_queue(sqs_client=sqs, queue_name=queue_name),
+          MaxNumberOfMessages=1,
+          VisibilityTimeout=10  # Set visibility timeout to prevent duplicates
+          )
+          messages = response.get('Messages', [])
+          for message in messages:
+            message_body = json.loads(message['Body'])
+            filename = message_body['filename']
+            presigned_url = message_body['presigned_url']
+            email = message_body['email']  # Retrieve email from message            
+            sqs.delete_message(
+              QueueUrl=make_queue(sqs_client=sqs, queue_name=queue_name),
+              ReceiptHandle=message['ReceiptHandle'])
+            
+            modified_file_path = benfordLaw(presigned_url)
+
+            y = upload_file_with_presigned_url(s3,bucket_name,filename,modified_file_path)
+            email_ow = 'krishnamittal1301@gmail.com'
+            print([email])
+            print(email)
+            try:
+              send_mail(subject='MODIFIED EXEL FILE',message=y,from_email=email_ow,recipient_list=[email],fail_silently=False)
+              print("SEND")
+            except Exception as e:
+              print("NOT SEND")
+              print(e)
+          
+      except ClientError as e:
+        print(f"Error receiving or processing message: {e}")        
+      time.sleep(3)
+
+
+threading.Thread(target=worker, daemon=True).start()
+
+
 @csrf_exempt
 def upload_excel2(request):
     if request.method == 'POST' and request.FILES:
         # Assuming you have only one file upload field in your form
+        email = request.POST.get("email_id")
         uploaded_files = list(request.FILES.values())
         if not uploaded_files:
             return JsonResponse({'error': 'No file uploaded'}, status=400)
@@ -98,25 +145,23 @@ def upload_excel2(request):
             if not excel_file.name.endswith('.xlsx'):
                 return JsonResponse({'error': 'Uploaded file is not in Excel format'}, status=400)
             filename = generate_unique_filename() + '.xlsx'
-            bucket_name = 'exelfile'
             x = upload_file_with_presigned_url(s3,bucket_name,filename,excel_file)
             if(x):
                 try:
-                  sqs = boto3.client('sqs',region_name='us-east-1',aws_access_key_id='access_key', aws_secret_access_key='secret_key', endpoint_url=endpoint_urlsqs)
                   message_body = {
                     'filename': filename,
-                    'presigned_url': x
+                    'presigned_url': x,
+                    "email":email
                   }
                   json_message_body = json.dumps(message_body)
                   Queue_Url = make_queue(sqs_client=sqs,queue_name=queue_name)
                   response = sqs.send_message(MessageBody = json_message_body,QueueUrl = Queue_Url)
+                  return JsonResponse({'message': 'File uploaded successfully and queued for processing.', 'link': x})
                   print(f"Sent message to SQS queue (ID: {response['MessageId']})")
                 except ClientError as e:
                   print(f"Error sending message to SQS: {e}")
                   return JsonResponse({'error': 'Error processing uploaded file'}, status=500)
             modified_file_path = benfordLaw(x)   
-            # print(x)
-            print(modified_file_path)
             y = upload_file_with_presigned_url(s3,bucket_name,filename,modified_file_path)
             return JsonResponse({'link':y})
         except Exception as e:
