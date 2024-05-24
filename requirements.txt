@@ -1,0 +1,9 @@
+# Usage: pip install -r requirements.txt
+matplotlib
+openpyxl
+pandas
+numpy
+requests 
+boto3
+botocore
+threading
