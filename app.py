@@ -3,6 +3,8 @@ import pandas as pd
 import math
 from collections import defaultdict
 import matplotlib.pyplot as plt
+from openpyxl import load_workbook,workbook
+from openpyxl.styles import PatternFill
 
 def get_first_digit(number):
     return int(str(number)[0])
@@ -39,6 +41,26 @@ def benfords2_law(data,i,j):
 
     return benfords, observed
 
+def get_first_digit(number):
+    return int(str(number)[0])
+        
+def get_first_two_digit(number):
+    return int(str(number)[:2])
+
+def benfords1_law(data, i):
+    counts = defaultdict(int)
+    total = 0
+    for value in data:
+        first_two_digits = get_first_two_digit(value)
+        counts[first_two_digits] += 1
+        total += 1
+    
+    benfords = [math.log10(1 + 1 / digit) * total for digit in range(10 * i + 1, 10 * i + 10)]
+    observed = [counts[digit] for digit in range(10 * i + 1, 10 * i + 10)]
+    
+    return benfords, observed
+
+
 def benfords_law(data):
     counts = defaultdict(int)
     total = 0
@@ -47,12 +69,9 @@ def benfords_law(data):
         counts[first_digit] += 1
         total += 1
     
-    benfords = [math.log10(1 + 1 / digit) * total for digit in range(1, 10)]
+    benfords = [(math.log10(1 + 1 / digit) * total) for digit in range(1, 10)]
     observed = [counts[digit] for digit in range(1, 10)]
-    
     return benfords, observed
-
-
 
 
 # Set page title and favicon
@@ -67,13 +86,14 @@ uploaded_file = st.file_uploader("Upload Excel file", type=["xlsx"])
 if uploaded_file is not None:
     # Load Excel file
     df = pd.read_excel(uploaded_file)
-    
+    df2 = df
     # Select column for analysis
     column_to_analyze = st.selectbox("Select column for analysis", options=df.columns)
     df = df[column_to_analyze]
     x = len(df)
     benfords, observed = benfords_law(df.values)
     deviations = [((observed[i] - benfords[i]) / x )* 100 for i in range(9)]
+
     
     # Display Benford's law deviations
     st.subheader("Benford's Law Deviation:")
@@ -111,7 +131,7 @@ if uploaded_file is not None:
             if (deviations[i]>0):
                 maxdev[deviations[i]]=10*value+i
 
-        
+    color = 'FFFF00'  
     plt.legend()
     st.pyplot()
     maxdev=sorted(maxdev.items())
@@ -119,6 +139,20 @@ if uploaded_file is not None:
     for key,value in maxdev:
         st.write(f"deviation {key} : {value}")
 
+    wb = load_workbook(uploaded_file)
+    ws = wb.active
+    column_index = df2.columns.get_loc(column_to_analyze) + 1
+    for key,val in maxdev:
+        for r_idx, value in enumerate(df2[column_to_analyze], 1):
+            cell = ws.cell(row=r_idx, column=column_index)
+            cell.value = value
+            
+            # Check if the cell starts with "12" and apply color
+            if str(value).startswith(str(val)):
+                cell.fill = PatternFill(start_color=color, end_color=color, fill_type="solid")
+
+    modified_file_path = 'modified_file.xlsx'
+    wb.save(modified_file_path)
 
     # Perform formatting and save modified Excel file
     # This part can be implemented later
