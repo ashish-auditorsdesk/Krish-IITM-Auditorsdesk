@@ -5,7 +5,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 from openpyxl import load_workbook,workbook
 from openpyxl.styles import PatternFill
-
+from io import BytesIO
 def get_first_digit(number):
     return int(str(number)[0])
     
@@ -143,16 +143,21 @@ if uploaded_file is not None:
     ws = wb.active
     column_index = df2.columns.get_loc(column_to_analyze) + 1
     for key,val in maxdev:
-        for r_idx, value in enumerate(df2[column_to_analyze], 2):
+        for r_idx, value in enumerate(df2[column_to_analyze], start=2):
             cell = ws.cell(row=r_idx, column=column_index)
             cell.value = value
             
             # Check if the cell starts with "12" and apply color
             if str(value).startswith(str(val)):
                 cell.fill = PatternFill(start_color=color, end_color=color, fill_type="solid")
+    modified_file = BytesIO()
+    wb.save(modified_file)
+    modified_file.seek(0)
 
     modified_file_path = 'modified_file.xlsx'
-    wb.save(modified_file_path)
+    if st.download_button(label="Download data as exel",data=modified_file,file_name=modified_file_path,mime="exel/csv"):
+        st.snow()
+    # wb.save(modified_file_path)
 
     # Perform formatting and save modified Excel file
     # This part can be implemented later
