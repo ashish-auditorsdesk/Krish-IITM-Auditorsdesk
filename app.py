@@ -143,7 +143,7 @@ if uploaded_file is not None:
     ws = wb.active
     column_index = df2.columns.get_loc(column_to_analyze) + 1
     for key,val in maxdev:
-        for r_idx, value in enumerate(df2[column_to_analyze], 1):
+        for r_idx, value in enumerate(df2[column_to_analyze], 2):
             cell = ws.cell(row=r_idx, column=column_index)
             cell.value = value
             

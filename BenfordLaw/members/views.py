@@ -89,8 +89,9 @@ aws_secret_access_key=aws_secret_access_key,
 endpoint_url=endpoint_url
 )
 
+
 bucket_name = 'exelfile'
-sqs = boto3.client('sqs',region_name='us-east-1',aws_access_key_id='access_key', aws_secret_access_key='secret_key', endpoint_url=endpoint_urlsqs)
+sqs = boto3.client('sqs',region_name='us-east-1',aws_access_key_id='access_key', aws_secret_access_key='secret_key', endpoint_url=endpoint_url)
 
 
 def worker():
