@@ -1,7 +1,5 @@
 from paddleocr import PaddleOCR,draw_ocr
-import re 
-from PIL import Image
-import numpy as np
+import re
 
 def is_number(s):
     try:
