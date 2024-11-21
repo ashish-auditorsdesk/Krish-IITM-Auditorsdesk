@@ -4,6 +4,6 @@ from . import views
 # process_queued_file()
 
 urlpatterns = [
-    path('hello',views.ocr)
+    path('hello/',views.ocr)
 ]
 

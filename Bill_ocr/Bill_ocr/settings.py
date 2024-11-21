@@ -1,3 +1,4 @@
+import os
 """
 Django settings for Bill_ocr project.
 
@@ -28,6 +29,15 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 LOCALSTACK_ENDPOINT_URL = 'http://localhost:4566'
+
+
+# Check if you're running inside Docker
+if os.getenv("DOCKER_ENV"):
+    LOCALSTACK_ENDPOINT_URL = "http://localstack:4566"
+else:
+    LOCALSTACK_ENDPOINT_URL = "http://localhost:4566"
+
+
 AWS_ACCESS_KEY_ID = 'test'
 AWS_SECRET_ACCESS_KEY = 'test'
 AWS_REGION = 'us-east-1'
