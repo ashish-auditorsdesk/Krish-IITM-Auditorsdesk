@@ -90,7 +90,15 @@ def ocr_by_paddleocr(image):
         print('Starting OCR processing...')
 
         # Initialize PaddleOCR
-        ocr = PaddleOCR(use_angle_cls=True, lang='en')
+        # ocr = PaddleOCR(use_angle_cls=True, lang='en')
+        ocr = PaddleOCR(
+    use_angle_cls=True,
+    lang='en',
+    det_model_dir='weights/det',  # Path to the detection model
+    rec_model_dir='weights/rec',  # Path to the recognition model
+    cls_model_dir='weights/cls'   # Path to the classification model
+)
+
         print('PaddleOCR initialized.')
 
         # Perform OCR on the image
